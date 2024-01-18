@@ -13,8 +13,15 @@ def lambda_handler(event, context):
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     document_key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
 
-    # Procesar el documento
-    extracted_text= 'S3Object': {'Bucket': bucket_name, 'Name': document_key}
+    # Llama a Textract para procesar el documento
+
+    response = textract_client.detect_document_text(
+        Document={'S3Object': {'Bucket': bucket_name, 'Name': document_key}}
+    )
+
+    # Extrae el texto del documento
+    extracted_text = " ".join([item["Text"] for item in response["Blocks"] if item["BlockType"] == "LINE"])
+
 
     # Guarda la respuesta en S3
     s3_client.put_object(Bucket=output_bucket, Key=output_key, Body=extracted_text)
