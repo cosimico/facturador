@@ -30,7 +30,7 @@ def lambda_handler(event, context):
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": "Extract the date, address, total amount, and invoice number from this invoice:"},
+                    {"type": "text", "text": "You are an expert at reading invoices and returning data in a Python-valid JSON format. Extract the date, address, total amount, and invoice number from this invoice and return ONLY a compact, single-line JSON object without unnecessary whitespace or slashes, containing this information."},
                     {"type": "image_url", "image_url": {"url": image_url}},
                 ],
             }
@@ -39,13 +39,11 @@ def lambda_handler(event, context):
     )
 
     # Extrae la respuesta y estructura los datos
-    extracted_data = response.choices[0]
-
+    extracted_data = response.choices[0].message.content
     # Convierte la información extraída a JSON
-    factura_json = json.dumps(extracted_data)
 
     # Guarda la información extraída en S3 como un objeto JSON
-    s3_client.put_object(Bucket=output_bucket, Key=output_key, Body=factura_json)
+    s3_client.put_object(Bucket=output_bucket, Key=output_key, Body=extracted_data)
 
     return {
         'statusCode': 200,
